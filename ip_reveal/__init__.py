@@ -1,4 +1,3 @@
-from logging import getLogger
 import socket
 import sys
 from argparse import ArgumentParser
@@ -7,20 +6,18 @@ from socket import gaierror
 from urllib.error import URLError
 
 import PySimpleGUIQt as Qt
-import requests
 from inspy_logger import LEVELS as LOG_LEVELS, getLogger
 from inspy_logger import InspyLogger
-from inspyred_print import Color, Effects, Format
+from inspyred_print import Color, Format
 from requests import get
 from requests.exceptions import ConnectionError
-from urllib3 import exceptions
 from urllib3.exceptions import MaxRetryError
+from threading import Thread
 
-from assets.ui_elements.backgrounds import NEON_DARK_FP
-from assets.ui_elements.icons import app_main_24x24
-from assets.ui_elements.icons import app_quit_50x50_fp
-from assets.ui_elements.icons import app_refresh_50x50_fp
-
+from ip_reveal.assets.ui_elements.backgrounds import NEON_DARK_FP
+from ip_reveal.assets.ui_elements.icons import app_main_24x24
+from ip_reveal.assets.ui_elements.icons import app_quit_50x50_fp
+from ip_reveal.assets.ui_elements.icons import app_refresh_50x50_fp
 
 import ip_reveal.timers as timer
 from ip_reveal.popups import ip_change_notify
@@ -91,8 +88,9 @@ def get_external():
         external = get('https://api.ipify.org').text
         _debug(f'Checked external IP and found it is: {external}')
 
-    # Catch the "ConnectionError" exception that is raised when the "requests" package is unable to reach "IPIFY.org", simply reporting this occurred (if the logger is listening)
-    # before (maybe first; attempt connection to another service?)
+    # Catch the "ConnectionError" exception that is raised when the "requests" package is unable to reach
+    # "IPIFY.org", simply reporting this occurred (if the logger is listening) before (maybe first; attempt connection
+    # to another service?)
     except (ConnectionError, MaxRetryError, gaierror, URLError) as e:
         if not inet_down:
             _log.warning("Unable to establish an internet connection.")
@@ -155,13 +153,13 @@ def get_internal():
         s.close()
 
     # Announce that we've found an IP
-    debug(f'Checked internal IP and found: {IP}')
+    _debug(f'Checked internal IP and found: {IP}')
 
     # Return a string containing the result to the caller.
     return IP
 
 
-def update_window():
+def update_window(values=None):
     """
 
     A function that handles the following processes for updating the IP Reveal window:
@@ -204,7 +202,7 @@ def update_window():
     ip = get_external()
 
     if not ip:
-        ip = f"{red}Offline{end}"
+        ip = "Offline"
 
     local_ip = get_internal()
     hostname = get_hostname()
@@ -213,8 +211,13 @@ def update_window():
     # routine to always track the time since last data fetching
     timer.refresh()
 
+    if ip == "Offline":
+        t_color = "red"
+    else:
+        t_color = "green"
+
     # Update the relevant fields with our fresh data
-    window['EXTIP_OUT'].update(ip)
+    window['EXTIP_OUT'].update(ip, text_color=t_color)
     window['INTIP_OUT'].update(local_ip)
     window['HOSTNAME_OUT'].update(hostname)
     window['TIME_SINCE_Q_OUT'].update("Just now...")
@@ -246,22 +249,33 @@ def safe_exit(win, exit_reason):
     sys.exit()
 
 
-if __name__ == '__main__':
+# Set up a name for our logging device
+log_name = "IPReveal"
 
-    # Declare a variable named 'acc' for our accumulator and set it at int(0)
-    acc = 0
-    # For statistics tracking; declare a variable called 'refresh_num' and start it at 0
-    refresh_num = 0
-    # ...and one that will hold our total cycle count
-    total_acc = 0
+# Declare a variable named 'acc' for our accumulator and set it at int(0)
+acc = 0
+
+# For statistics tracking; declare a variable called 'refresh_num' and start it at 0
+refresh_num = 0
+
+# ...and one that will hold our total cycle count
+total_acc = 0
+
+# Set up a placeholder variable for our window object
+window = None
+
+# Set up two variables that will act as caches for the external and internal IPs
+cached_ext_ip = None
+cached_int_ip = None
+
+
+def main():
+    global total_acc, acc, refresh_num, window
 
     # Timer text
     t_text = "Just now..."
 
-    cached_ext_ip = None
-    cached_int_ip = None
-
-    #Qt.theme('DarkBlue3')
+    # Qt.theme('DarkBlue3')
 
     parser = ArgumentParser(
         'ip-reveal', description='A program that will show you your external IP address.')
@@ -294,7 +308,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Set up the logging device
-    log_name = 'IPReveal'
     log_device = InspyLogger(log_name, args.log_level)
 
     # Start the logging device
@@ -323,24 +336,38 @@ if __name__ == '__main__':
     ]
 
     bg_color = "340245"
+    size = (220, 50)
+    alpha = 1
+    if alpha >= 1:
+        text_background_color = "pink"
+    else:
+        text_background_color = "white"
 
     layout = [
         [
-            Qt.Text('External IP:', background_color=bg_color, relief=Qt.RELIEF_GROOVE),
-            Qt.Text(get_external(), relief=Qt.RELIEF_SUNKEN, key='EXTIP_OUT', background_color=bg_color),
+            Qt.Text('External IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
+                    size_px=size, auto_size_text=True, justification='center'),
+            Qt.Text(get_external(), relief=Qt.RELIEF_SUNKEN, key='EXTIP_OUT', background_color=text_background_color,
+                    text_color="black", size_px=size, auto_size_text=True, justification='center'),
         ],
 
         [
-            Qt.Text('Internal IP:', background_color=bg_color, relief=Qt.RELIEF_GROOVE),
-            Qt.Text(get_internal(), key='INTIP_OUT', relief=Qt.RELIEF_SUNKEN, background_color=bg_color)
+            Qt.Text('Internal IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
+                    size_px=size, auto_size_text=True, justification='center'),
+            Qt.Text(get_internal(), key='INTIP_OUT', relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
+                    text_color="black", size_px=size, auto_size_text=True, justification='center')
         ],
         [
-            Qt.Text('Hostname:', background_color=bg_color, relief=Qt.RELIEF_GROOVE),
-            Qt.Text(get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN, background_color=bg_color)
+            Qt.Text('Hostname:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
+                    size_px=size, auto_size_text=True, justification='center'),
+            Qt.Text(get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
+                    text_color="black", size_px=size, auto_size_text=True, justification='center')
         ],
         [
-            Qt.Text(f"Last checked", background_color=bg_color, relief=Qt.RELIEF_GROOVE),
-            Qt.Text(t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN, background_color=bg_color)
+            Qt.Text(f"Last checked", background_color=text_background_color, text_color="black",
+                    relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
+            Qt.Text(t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
+                    text_color="black", size_px=size, auto_size_text=True, justification='center')
         ],
         [
             Qt.Button('', key='MAIN_CLOSE_BUTTON',
@@ -350,20 +377,21 @@ if __name__ == '__main__':
                       tooltip="Quit IP Reveal"),
             Qt.Button('', key='MAIN_REFRESH_BUTTON',
                       image_filename=app_refresh_50x50_fp,
-                      image_size=(50,50),
+                      image_size=(50, 50),
                       button_color=(None, "#ff0000"),
                       tooltip="Refresh")
         ],
     ]
 
     # Assemble the above widget into a window.
-    window = Qt.Window('insPy-sys', layout=layout,
+    window = Qt.Window('IP-Reveal by Inspyre Softworks', layout=layout,
                        background_image=NEON_DARK_FP,
                        icon=app_main_24x24,
                        size=(300, 400),
-                       alpha_channel=.90,
+                       alpha_channel=alpha,
                        grab_anywhere=True,
-                       background_color="ff0000")
+                       background_color="white"
+                       )
 
     # Start our main GUI loop.
     while True:
@@ -384,7 +412,11 @@ if __name__ == '__main__':
         # If the accumulator is at 325 counts, alert the user, update the window, and reset the accumulator
         if acc == 325:
             w_debug('Calling function to update the window...')
-            update_window()
+
+            window['TIME_SINCE_Q_OUT'].update('Refreshing...')
+            update_win = Thread(target=update_window)
+
+            update_win.start()
             w_debug('Updated window!')
 
         # If the 'Close' button is pressed: we exit.
