@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ip-reveal"
-version = "1.1a1"
+version = "0.0.0"
 description = "A GUI-based widget that checks your IP address periodically, sending notifications if it changes."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
 license = "WTFPL"
@@ -16,7 +16,6 @@ requests = "^2.25.0"
 playsound = "^1.2.2"
 
 
-
 [tool.poetry.dev-dependencies]
 Sphinx = "^3.4.1"
 
@@ -25,4 +24,4 @@ ip-reveal = 'ip_reveal:main'
 
 [build-system]
 requires = ["poetry-core>=0.12"]
-build-backend = "poetry.masonry.api"
+build-backend = "poetry.core.masonry.api"
