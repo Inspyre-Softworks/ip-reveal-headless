@@ -28,8 +28,11 @@ from ip_reveal.assets.ui_elements.icons import app_main_24x24
 from ip_reveal.assets.ui_elements.icons import app_quit_50x50_fp
 from ip_reveal.assets.ui_elements.icons import app_refresh_50x50_fp
 
-import ip_reveal.timers as timer
-from ip_reveal.popups import ip_change_notify
+from ip_reveal import config
+
+#import ip_reveal.timers as timer
+import humanize
+from inspyre_toolbox.live_timer import Timer
 from ip_reveal.tools import commify
 
 quit_icon = app_quit_50x50_fp
@@ -41,14 +44,16 @@ red = color.red
 
 update_window_timer = None
 
-timer = timer
+timer = Timer()
 timer.start()
 
 cached_ext_ip = None
 ip_hist = []
 
 inet_down = False
-
+log_device = None
+args = None
+config = config
 
 def get_hostname():
     """
@@ -72,6 +77,29 @@ def get_hostname():
     return hostname
 
 
+def push_notification(old_ip, new_ip):
+    """
+    
+    Push a notification through the GUI with a sound.
+    
+    
+    Args:
+        old_ip (str):
+            The IP that was held previously.
+        
+        new_ip (str):
+            The new - currently held - IP address
+            
+
+    Returns:
+        None
+
+    """
+    from ip_reveal.popups import ip_change_notify
+
+    ip_change_notify(old_ip, new_ip)
+    
+
 def get_external():
     """
     get_external
@@ -89,8 +117,9 @@ def get_external():
 
     # Try contacting IPIFY.org with a basic request and read the returned text.
     #
-    # If we are unable to connect to this outside service, it's likely that Internet connection has dropped. There are - however, instances where this service is down,
-    # and for these reasons we want to have at least one alternative to control for failure on a Singular -free- AI API.
+    # If we are unable to connect to this outside service, it's likely that Internet connection has dropped. There
+    # are - however, instances where this service is down, and for these reasons we want to have at least one
+    # alternative to control for failure on a Singular -free- AI API.
 
     # Fetch the external IP-Address from IPIFY.org
     try:
@@ -111,7 +140,7 @@ def get_external():
         if not cached_ext_ip:
             cached_ext_ip = external
             if not cached_ext_ip == external:
-                ip_change_notify(cached_ext_ip, external)
+                push_notification(cached_ext_ip, external)
                 cached_ext_ip = external
 
     else:
@@ -169,6 +198,8 @@ def get_internal():
 
 
 def update_window(values=None):
+    global log_device, args
+    from ip_reveal.popups import ip_change_notify
     """
 
     A function that handles the following processes for updating the IP Reveal window:
@@ -218,7 +249,7 @@ def update_window(values=None):
 
     # Call a 'refresh()' on our timer object. This will start another cycle to keep track of. This allows the timer
     # routine to always track the time since last data fetching
-    timer.refresh()
+    timer.reset()
 
     if ip == "Offline":
         t_color = "red"
@@ -236,22 +267,24 @@ def update_window(values=None):
     u_debug(f'This was refresh number {refresh_num}')
 
     if not ip == cached_ext_ip:
-        ip_change_notify(cached_ext_ip, ip)
+        ip_change_notify(cached_ext_ip, ip, args.mute_all)
         cached_ext_ip = ip
         ip_hist.append(ip)
 
 
 def safe_exit(win, exit_reason):
+    _log = getLogger(log_name + '.safe_exit')
+    
     tmp_hist = []
     for ip in ip_hist:
         if ip not in tmp_hist:
             tmp_hist.append(ip)
 
-    print(f"During operation you switched IP addresses {len(ip_hist) - 1} times.")
-    print(f"Held IP addresses: {tmp_hist}")
-    print(f"Exiting safely. Reason: {exit_reason}")
-    print(f"The IP address was refreshed {refresh_num} times")
-    print(f"Window underwent {total_acc} cycles")
+    _log.info(f"During operation you switched IP addresses {len(ip_hist) - 1} times.")
+    _log.info(f"Held IP addresses: {tmp_hist}")
+    _log.info(f"Exiting safely. Reason: {exit_reason}")
+    _log.info(f"The IP address was refreshed {refresh_num} times")
+    _log.info(f"Window underwent {total_acc} cycles")
     print(timer.start_time)
 
     win.close()
@@ -277,9 +310,10 @@ window = None
 cached_ext_ip = None
 cached_int_ip = None
 
+acc2 = 0
 
 def main():
-    global total_acc, acc, refresh_num, window
+    global total_acc, acc, refresh_num, window, log_device, args
 
     # Timer text
     t_text = "Just now..."
@@ -302,6 +336,14 @@ def main():
                         help="Starts the program with all program audio muted.",
                         default=False
                         )
+    
+    # Argument to implicitly set the refresh rate
+    parser.add_argument('-r', '--refresh-interval',
+                        type=int,
+                        default=30,
+                        help='Specify the number of seconds you want to have pass before IP-Reveal refreshes your IP '
+                             'information. (Defaults to 30)',
+                        action='store')
 
     parser.add_argument('-V', '--version', action='version', version='1.2'
                         )
@@ -316,11 +358,25 @@ def main():
     local_parse = sub_parsers.add_parser('get-local',
                                          help='Return the local IP-Address to the command-line and nothing '
                                               'else.')
+    test_audio_parse = sub_parsers.add_parser('test-audio',
+                                              help="To ensure you get notifications you can test IP-Reveal's audio "
+                                                   "engine with this command.")
+    test_audio_parse.add_argument('-c', '--countdown',
+                                  action='store',
+                                  type=int,
+                                  default=3,
+                                  help="Enter the number to countdown from before starting the test.")
+    test_audio_parse.add_argument('-f', '--full',
+                                  help='Run the full range of audio tests provided by the audio engine',
+                                  action='store_true',
+                                  default=False)
 
     args = parser.parse_args()
+    
+    config.args = args
 
     # Set up the logging device
-    log_device = InspyLogger(log_name, args.log_level)
+    log_device = InspyLogger(log_name, args.log_level).device
 
     # Start the logging device
     log = log_device.start(mute=args.subcommands)
@@ -341,6 +397,10 @@ def main():
         exit()
     elif args.subcommands == 'get-local':
         print(get_internal())
+        exit()
+    elif args.subcommands == 'test-audio':
+        from ip_reveal.assets.sounds import run_audio_test
+        run_audio_test(args.countdown, args.full, args.log_level)
         exit()
 
     status_bar_layout = [
@@ -404,6 +464,7 @@ def main():
                        grab_anywhere=True,
                        background_color="white"
                        )
+    
 
     # Start our main GUI loop.
     while True:
@@ -417,12 +478,13 @@ def main():
         acc += 1
         total_acc += 1
 
-        t_text = timer.get_elapsed()
+        t = int(timer.get_elapsed(seconds=True))
+        t_text = humanize.naturaldelta(t)
 
         window['TIME_SINCE_Q_OUT'].update(f"{t_text} ago...")
 
         # If the accumulator is at 325 counts, alert the user, update the window, and reset the accumulator
-        if acc == 325:
+        if t == args.refresh_interval:
             w_debug('Calling function to update the window...')
 
             window['TIME_SINCE_Q_OUT'].update('Refreshing...')
