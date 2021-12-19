@@ -1,0 +1,19 @@
+ip\_reveal.gui package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ip_reveal.gui.menus
+   ip_reveal.gui.windows
+
+Module contents
+---------------
+
+.. automodule:: ip_reveal.gui
+   :members:
+   :undoc-members:
+   :show-inheritance:

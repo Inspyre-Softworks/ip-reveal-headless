@@ -1,0 +1,45 @@
+ip\_reveal.config package
+=========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ip_reveal.config.arguments
+
+Submodules
+----------
+
+ip\_reveal.config.developer module
+----------------------------------
+
+.. automodule:: ip_reveal.config.developer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ip\_reveal.config.errors module
+-------------------------------
+
+.. automodule:: ip_reveal.config.errors
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ip\_reveal.config.version module
+--------------------------------
+
+.. automodule:: ip_reveal.config.version
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ip_reveal.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
