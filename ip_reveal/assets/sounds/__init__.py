@@ -33,17 +33,32 @@ def run_audio_test(countdown=3, full=False, log_level='debug'):
 class Alerts(object):
     
     import simpleaudio as sa
-    from ip_reveal.config import args
+    from ip_reveal.config import args, LOG_DEVICE, PROG_NAME
+    
     
     def __init__(self):
         """
         Initialize an "Alerts" class that contains sounds for alerts.
         """
+        self.log_name = self.PROG_NAME + '.assets.sounds.Alerts'
+        self.log = self.LOG_DEVICE.add_child(self.log_name)
+        self.log.debug('Instantiating!')
         self.asset_fp = alerts.ALERT_AUDIO_FP
+        self.log.debug(f"Using the following file for alert sounds: {self.asset_fp}.")
         self.o_pulse_fp = alerts.O_PULSE_FP
         self.sound = self.sa.WaveObject.from_wave_file(self.o_pulse_fp)
-        
-        
+        self.log.debug("Loaded sound file.")
         
     def play(self):
+        """
+        
+        Play the audible alert sound when called.
+        
+        Returns:
+            None
+
+        """
+        log = self.LOG_DEVICE.add_child(self.log_name + '.play')
+        log.debug('Received request to play alert sound.')
         self.sound.play()
+        log.debug('Finished playing alert sound!')
