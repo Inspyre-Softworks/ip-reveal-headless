@@ -1,22 +1,18 @@
 [tool.poetry]
-name = "ip-reveal"
-version = "1.3a1"
-description = "A GUI-based widget that checks your IP address periodically, sending notifications if it changes."
+name = "ip-reveal-headless"
+version = "1.0"
+description = "Quickly ascertain your public IP address, hostname, and local IP address."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
-license = "WTFPL"
+license = "MIT"
 
 [tool.poetry.dependencies]
 humanize = "^3.1.0"
 inspy_logger = "2.1a14"
 inspyred_print = "^1.0"
-PySimpleGUI = "^4.30.0"
-PySimpleGUIQt = "^0.35.0"
-python = ">=3.8,<3.10"
+python = "^3.7"
 requests = "^2.25.0"
-simpleaudio = "^1.0.4"
 pypattyrn = "^1.2"
-inspyre-toolbox = "1.0a8"
-PySide2 = "^5.15.2"
+inspyre-toolbox = "1.0a8
 toml = "^0.10.2"
 johnnydep = "^1.10"
 pyperclip = "^1.8.2"
