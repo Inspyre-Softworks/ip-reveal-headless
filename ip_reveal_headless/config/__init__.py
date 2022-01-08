@@ -1,7 +1,7 @@
 import pkg_resources
 from inspy_logger import InspyLogger
-from ip_reveal.config.version import VERSION
-from ip_reveal.config.arguments import ParsedArgs, load_subcommands as args_load_subcommands
+from ip_reveal_headless.config.version import VERSION
+from ip_reveal_headless.config.arguments import ParsedArgs, load_subcommands as args_load_subcommands
 from configparser import ConfigParser
 import os
 from pathlib import Path

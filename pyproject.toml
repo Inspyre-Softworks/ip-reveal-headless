@@ -9,13 +9,12 @@ license = "MIT"
 humanize = "^3.1.0"
 inspy_logger = "2.1a14"
 inspyred_print = "^1.0"
-python = "^3.7"
+python = "^3.8"
 requests = "^2.25.0"
 pypattyrn = "^1.2"
-inspyre-toolbox = "1.0a8
+inspyre-toolbox = "1.0a8"
 toml = "^0.10.2"
 johnnydep = "^1.10"
-pyperclip = "^1.8.2"
 
 
 
