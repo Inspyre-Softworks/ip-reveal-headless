@@ -13,7 +13,7 @@ muted = None
 
 # Instantiate object.
 _args = ParsedArgs(prog=PROG_NAME, description='Easily find and monitor your IP addresses.', ver_obj=VERSION)
-args_load_subcommands(_args)
+args_load_subcommands(_args.parser, _args.aliases)
 
 PARSED_ARGS = _args.parser.parse_args()
 CMD_ALIASES = _args.aliases
@@ -91,12 +91,15 @@ class Config(object):
         return self.filepath
     
     def build_pref_win_specs(self):
-        import PySimpleGUI as psg
+
+        try:
+            import PySimpleGUI as psg
+        except ModuleNotFoundError:
+            return None
         
         layout = []
         
         for opt in self.parser.options('DEFAULTS'):
-            print(opt)
             if self.parser.get("DEFAULTS", opt) in ['True', 'False']:
                 layout.append([psg.CBox(opt, key=f'PREF_INPUT_CBOX_{opt.upper()}')])
             elif self.parser.get("DEFAULTS", opt).isnumeric():
@@ -135,8 +138,6 @@ class Config(object):
             if not self.filepath.parent.exists():
                 os.makedirs(self.filepath.parent, exist_ok=False)
             self.create()
-            
-        print(self.parser.sections())
 
         self.pref_window_specs = self.build_pref_win_specs()
 
@@ -207,7 +208,7 @@ class Paths(object):
 CONFIG = load_config()
 ''' The instantiated config object '''
 
-args = PARSED_ARGS
+ARGS = PARSED_ARGS
 
 LOG_DEVICE = InspyLogger(PROG_NAME, PARSED_ARGS.log_level).device
 ''' An instantiated logging device '''

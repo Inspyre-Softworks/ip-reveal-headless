@@ -9,7 +9,7 @@ class Version(object):
         
     
     def __init__(self):
-        self.prog_name = 'IP-Reveal'
+        self.prog_name = 'IP-Reveal-Headless'
         self.dist = JohnnyDist(self.prog_name)
         self.current = self.dist.version_installed
         self.bleeding_latest = self.dist.version_latest

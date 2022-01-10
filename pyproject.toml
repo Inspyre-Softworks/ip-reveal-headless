@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ip-reveal-headless"
-version = "1.0"
+version = "1.0.4"
 description = "Quickly ascertain your public IP address, hostname, and local IP address."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
 license = "MIT"
@@ -23,11 +23,11 @@ Sphinx = "^3.4.1"
 changelog-generator = "^0.2.4"
 pre-commit = "^2.15.0"
 recommonmark = "^0.7.1"
-imwatchingyou = "^2.3.0"
 PyFuncExtras = "^0.0.1"
 
 [tool.poetry.scripts]
-ip-reveal = 'ip_reveal:main'
+ip-reveal = 'ip_reveal_headless:main'
+ip-reveal-headless = 'ip_reveal_headless:main'
 
 [build-system]
 requires = ["poetry-core>=0.12"]

@@ -15,13 +15,8 @@ class ParsedArgs(object):
                     'ip',
                     'get-ip',
                     'internet',
-                    'get-internet']
-            self.test_audio = [
-                    'audio-test',
-                    'audiotest',
-                    'testaudio',
-                    'test-audio'
-                    ]
+                    'get-internet',
+                    'get-public']
             self.get_host = [
                     'get-hostname',
                     'hostname',
@@ -35,15 +30,16 @@ class ParsedArgs(object):
                     'get-private',
                     'private',
                     'get-internal',
-                    'internal'
+                    'internal',
+                    'get-local'
                     ]
             
             self.get_all = [
                     'all',
-                    'reveal'
+                    'reveal',
+                    'get-all'
                     ]
-    
-    
+
     def __init__(self, prog, description, ver_obj) :
         """
 
@@ -64,34 +60,8 @@ class ParsedArgs(object):
                 default='info'
                 )
         
-        # Argument to mute sounds
-        self.parser.add_argument(
-                '-m', '--mute-all',
-                action='store_true',
-                required=False,
-                help="Starts the program with all program audio muted.",
-                default=False
-                )
-        
-        # Argument to implicitly set the refresh rate
-        self.parser.add_argument(
-                '-r', '--refresh-interval',
-                type=int,
-                default=30,
-                help='Specify the number of seconds you want to have pass before IP-Reveal refreshes your IP '
-                     'information. (Defaults to 30)',
-                action='store'
-                )
-        
-        self.parser.add_argument(
-                '-V', '--version', action='version', version=str(ver_obj)
-                )
-        
-        self.parser.add_argument(
-                "--no-alerts", required=False, action='store_true', default=False,
-                help="If you use this flag it will set"
-                )
-        
+        self.parser.add_argument('-V', '--version', action='version', version=str(ver_obj))
+
         self.parser.add_argument(
                 '-C', '--config-filepath',
                 action='store',
@@ -109,7 +79,7 @@ class ParsedArgs(object):
                 )
 
 
-def load_subcommands(parser) :
+def load_subcommands(parser, aliases) :
     """
     
     Create sub-commands for the passed argparse.ArgumentParser object along with their alias commands.
@@ -157,13 +127,6 @@ def load_subcommands(parser) :
 
     """
     
-    
-    
-    args = parser
-    parser = args.parser
-    
-    aliases = args.aliases
-    
     sub_commands = parser.add_subparsers(
             dest='subcommands',
             metavar='COMMANDS',
@@ -195,27 +158,3 @@ def load_subcommands(parser) :
             'get-all',
             help='Return the local IP, external IP, and computer hostname before exiting.',
             aliases=aliases.get_all)
-    
-    # Create the 'test-audio' command and it's aliases
-    test_audio_parse = sub_commands.add_parser(
-            'test-audio',
-            help="To ensure you get notifications you can test IP-Reveal's audio "
-                 "engine with this command.",
-            aliases=aliases.test_audio)
-    
-    # Set up the countdown argument.
-    test_audio_parse.add_argument(
-            '-c', '--countdown',
-            action='store',
-            type=int,
-            default=3,
-            help="Enter the number to countdown from before starting the test."
-            )
-    
-    # Set up the full test argument
-    test_audio_parse.add_argument(
-            '-f', '--full',
-            help='Run the full range of audio tests provided by the audio engine',
-            action='store_true',
-            default=False,
-            )

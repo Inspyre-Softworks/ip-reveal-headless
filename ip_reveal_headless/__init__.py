@@ -6,17 +6,11 @@ from urllib.error import URLError
 from ip_reveal_headless.config import PARSED_ARGS, CMD_ALIASES, LOG_DEVICE
 
 
-
-from inspy_logger import LEVELS as LOG_LEVELS, getLogger
-from inspy_logger import InspyLogger
 from requests import get
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import MaxRetryError
 
-from ip_reveal_headless import config
-
-# import ip_reveal.timers as timer
-import humanize
+from ip_reveal_headless.config import CONFIG, ARGS, LOG_DEVICE
 from ip_reveal_headless.tools import commify
 
 
@@ -26,9 +20,9 @@ ip_hist = []
 
 inet_down = False
 log_device = None
-args = config.args
+args = ARGS
 
-config = config.CONFIG
+config = CONFIG
 
 
 def get_hostname() :
@@ -42,7 +36,7 @@ def get_hostname() :
     """
     
     # Prepare the logger
-    _log = getLogger(log_name + '.get_hostname')
+    _log = LOG_DEVICE.add_child(log_name + '.get_hostname')
     _debug = _log.debug
     
     # Fetch the hostname from platform.node
@@ -66,7 +60,7 @@ def get_external() :
     global cached_ext_ip, inet_down, ip_hist
     
     # Prepare the logger
-    _log = getLogger(log_name + '.get_external')
+    _log = LOG_DEVICE.add_child(log_name + '.get_external')
     _debug = _log.debug
     
     # Try contacting IPIFY.org with a basic request and read the returned text.
@@ -119,7 +113,7 @@ def get_internal() :
     """
     
     # Set up a logger
-    _log = getLogger(log_name + '.get_internal')
+    _log = LOG_DEVICE.add_child(log_name + '.get_internal')
     
     # Alias the debug entry call
     _debug = _log.debug
@@ -178,10 +172,9 @@ def main() :
     
     # Announce that we did that
     debug('Started my logger!')
-    log = getLogger(log_name + '.Main')
+    log = LOG_DEVICE.add_child(log_name + '.Main')
     # Alias the log.debug signature for ease-of-use
     debug = log.debug
-    print(args.subcommands)
     # See if we got one of the subcommands assigned.
     if args.subcommands in CMD_ALIASES.get_public:
         print(get_external())
