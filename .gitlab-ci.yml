@@ -26,15 +26,22 @@ cache:
 before_script:
   - python --version  # For debugging
   - pip install poetry
-  - poetry install
-  - poetry 
 
-run:
+build:
   script:
     - poetry build
-    # an alternative approach is to install and run:
-    - pip install dist/*.whl
-    - ip-reveal-headless get-all
   artifacts:
     paths:
       - dist/*.whl
+
+install:
+  script:
+    - pip install dist/*.whl
+
+run:
+  script:
+    - ip-reveal-headless get-all
+
+publish:
+  script:
+    - poetry publish
