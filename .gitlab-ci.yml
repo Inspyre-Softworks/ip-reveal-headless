@@ -41,7 +41,7 @@ run:
 
 badges:
   variables:
-    PRIVATE_TOKEN: $ACCESS_TOKEN
+    PRIVATE_TOKEN: $GITLAB_ACCESS_TOKEN
   script:
     - pip install badges-gitlab
     - badges-gitlab
