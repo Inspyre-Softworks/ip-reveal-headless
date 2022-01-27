@@ -35,17 +35,8 @@ run:
     # an alternative approach is to install and run:
     - pip install dist/*.whl
     - ip-reveal-headless get-all
+    - poetry config pypi-token.pypi $PYPI_TOKEN
+    - poetry publish 
   artifacts:
     paths:
       - dist/*.whl
-
-badges:
-  variables:
-    PRIVATE_TOKEN: $GITLAB_ACCESS_TOKEN
-  script:
-    - pip install badges-gitlab
-    - badges-gitlab
-  artifacts:
-    when: always
-    paths:
-      - public/badges/*.svg
