@@ -25,9 +25,9 @@ cache:
 
 before_script:
   - python --version  # For debugging
+  - pip install -U pip
   - pip install poetry
   - poetry install
-  - poetry 
 
 run:
   script:
