@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ip-reveal-headless"
-version = "1.1.0"
+version = "1.1.1"
 description = "Quickly ascertain your public IP address, hostname, and local IP address."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
 license = "MIT"
