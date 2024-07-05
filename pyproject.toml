@@ -1,28 +1,28 @@
 [tool.poetry]
 name = "ip-reveal-headless"
-version = "1.0.6"
+version = "1.1.0"
 description = "Quickly ascertain your public IP address, hostname, and local IP address."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-humanize = "^3.1.0"
-inspy_logger = "2.1a14"
+humanize = "^4.9.0"
+inspy_logger = "^3.2.0"
 inspyred_print = "^1.0"
-python = "^3.8"
-requests = "^2.25.0"
+python = "^3.10"
+requests = "^2.32.3"
 pypattyrn = "^1.2"
-inspyre-toolbox = "^1.2a1"
+inspyre-toolbox = "^1.5.3"
 toml = "^0.10.2"
 johnnydep = "^1.10"
-urllib3 = "^1.26.8"
+urllib3 = "^2.2.2"
 
 
 
 [tool.poetry.dev-dependencies]
-Sphinx = "^3.4.1"
-changelog-generator = "^0.2.4"
-pre-commit = "^2.15.0"
+Sphinx = "^7.3.7"
+changelog-generator = "^0.7"
+pre-commit = "^3.7.1"
 recommonmark = "^0.7.1"
 ptipython = "^1.0.1"
 
@@ -31,5 +31,5 @@ ip-reveal = 'ip_reveal_headless:main'
 ip-reveal-headless = 'ip_reveal_headless:main'
 
 [build-system]
-requires = ["poetry-core>=0.12"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
