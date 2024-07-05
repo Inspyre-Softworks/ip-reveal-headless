@@ -15,3 +15,11 @@ def commify(num):
     res = "{:,}".format(num)
 
     return res
+
+
+def is_repl():
+    try:
+        if __builtins__['__IPYTHON__']:
+            return True
+    except KeyError:
+        return False
