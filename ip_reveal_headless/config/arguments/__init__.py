@@ -21,7 +21,7 @@ class ParsedArgs(object):
                     'hostname',
                     'host',
                     'name',
-                    'get-name'
+                    'get-name',
                     'get-host'
                     ]
 
