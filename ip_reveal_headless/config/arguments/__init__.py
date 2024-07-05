@@ -22,6 +22,7 @@ class ParsedArgs(object):
                     'host',
                     'name',
                     'get-name'
+                    'get-host'
                     ]
 
             self.get_local = [
