@@ -8,9 +8,13 @@ from requests import get
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import MaxRetryError
 
-from ip_reveal_headless.config import PARSED_ARGS, CONFIG, LOG_DEVICE, CMD_ALIASES
+from ip_reveal_headless.config import PARSED_ARGS, CONFIG, CMD_ALIASES
+from ip_reveal_headless.log_engine import PROG_LOGGER
+from ip_reveal_headless.tools import commify, is_repl
+from ip_reveal_headless.version import VERSION
+from rich import print as rprint
 
-from ip_reveal_headless.tools import commify
+LOG_DEVICE = PROG_LOGGER.get_child('ip_reveal_headless.ip_reveal')
 
 
 cached_ext_ip = None
@@ -34,7 +38,7 @@ def get_hostname():
     """
 
     # Prepare the logger
-    _log = LOG_DEVICE.add_child(log_name + '.get_hostname')
+    _log = LOG_DEVICE.get_child(f'{log_name}.get_hostname')
     _debug = _log.debug
 
     # Fetch the hostname from platform.node
@@ -132,7 +136,7 @@ def get_internal():
     return IP
 
 
-# Set up a name for our logging device
+# Set up a name for our log_engine device
 log_name = "IPReveal"
 
 
@@ -143,39 +147,60 @@ log_name = "IPReveal"
 
 def main():
     """
-    
+
     This is the main function to run the IP-Reveal program
-    
+
     Returns:
         None
 
     """
     global log_device, args
 
-    # Qt.theme('DarkBlue3')
-
-    # Start the logging device
-    log = LOG_DEVICE.add_child(log_name)
-    debug = log.debug
-
-    # Announce that we did that
-    debug('Started my logger!')
-    log = LOG_DEVICE.add_child(log_name + '.Main')
+    log = LOG_DEVICE.add_child(f'{log_name}.Main')
     # Alias the log.debug signature for ease-of-use
     debug = log.debug
+
+    debug(f'Received arguments: {args}')
+    if args.subcommands:
+        debug(f'Running subcommand: {args.subcommands}')
+
+    tbr = None
+
+    if args.subcommands in CMD_ALIASES.print_version_info:
+        VERSION.print_version_info(check_for_update=PARSED_ARGS.update)
+
     # See if we got one of the subcommands assigned.
-    if args.subcommands in CMD_ALIASES.get_public:
-        print(get_external())
-        exit()
+    elif args.subcommands in CMD_ALIASES.get_public:
+        tbr = get_external()
+
     elif args.subcommands in CMD_ALIASES.get_host:
-        print(get_hostname())
-        exit()
+        tbr = get_hostname()
+
     elif args.subcommands in CMD_ALIASES.get_local:
-        print(get_internal())
-        exit()
+        tbr = get_internal()
+
     elif args.subcommands in CMD_ALIASES.get_all:
-        print(f"{get_hostname()}@({get_internal()}|{get_external()})")
-        exit()
+        tbr = f"{get_hostname()}@({get_internal()}|{get_external()})"
+
+    else:
+        print('No valid subcommand was given, exiting...')
+
+    if tbr:
+        debug(f'Returning: {tbr}')
+        if args.use_rich:
+            debug('Using rich to print result...')
+            rprint(tbr)
+        else:
+            debug('Using print to print result...')
+            print(tbr)
+
+    if not is_repl():
+        debug('Not in REPL, exiting...')
+        sys.exit()
+
+    debug('Entering interactive mode...')
+
+    LOG_DEVICE.info('Interactive session detected, entering interactive mode...')
 
 
 if __name__ == '__main__':
